@@ -79,12 +79,15 @@ class ClusterConnect(plugin.Plugin):
 			servers = config['server']
 			servers.sort()
 			#Create a group, if the terminals should be grouped
+			old_group=terminal.group
 			if CLUSTERS[cluster]['groupby'] == True:
 				groupname = str(random.randint(0, 1000))+"-"+cluster
-				terminal.really_create_group(term_window,cluster)
+				terminal.really_create_group(term_window,groupname)
 			else:
 				groupname='none'
 			self.split_terminal(focussed_terminal, servers, user, term_window, cluster,groupname)
+			#Set old window back to the last group, as really_create_group sets the window to the specified group
+			terminal.set_group(term_window,old_group)
 
 
 	def split_terminal(self, terminal, servers, user, window, cluster, groupname):
