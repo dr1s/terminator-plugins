@@ -43,7 +43,8 @@ class ClusterConnect(plugin.Plugin):
 		for cluster in clusters:
 			if not CLUSTERS[cluster].get('enabled', True):
 				continue
-			#If there are more then one users defined we have to split the selection for those usernames
+			# If there are more then one users defined we have to
+			# split the selection for those usernames
 			if len(CLUSTERS[cluster]['user']) > 1:
 				users = CLUSTERS[cluster]['user']
 
@@ -55,20 +56,21 @@ class ClusterConnect(plugin.Plugin):
 
 				for user in users:
 					menuitem = gtk.MenuItem(user)
-					menuitem.connect("activate", self.connect_cluster, terminal, cluster, user)
+					menuitem.connect("activate", self.connect_cluster, terminal,
+						cluster, user)
 					cluster_sub.append(menuitem)
 			else:
 				menuitem = gtk.MenuItem(cluster)
-				menuitem.connect("activate", self.connect_cluster, terminal, cluster, CLUSTERS[cluster]['user'][0])
+				menuitem.connect("activate", self.connect_cluster, terminal,
+					cluster, CLUSTERS[cluster]['user'][0])
 				submenu.append(menuitem)
 
-		menuitem = gtk.SeparatorMenuItem()
-		submenu.append(menuitem)
 
 
 	def connect_cluster(self, widget, terminal, cluster, user):
 		if CLUSTERS.has_key(cluster):
-			#get the first tab and add a new one so you don't need to care about which window is focused
+			# get the first tab and add a new one so you don't need to care
+			# about which window is focused
 			focussed_terminal = None
 			term_window = terminal.terminator.windows[0]
 			#add a new window where we connect to the servers, and switch to this tab
@@ -79,32 +81,34 @@ class ClusterConnect(plugin.Plugin):
 					focussed_terminal = visible_terminal
 
 			config = CLUSTERS[cluster]
-			server_count = len(config['server'])
 			servers = config['server']
 			servers.sort()
 			#Create a group, if the terminals should be grouped
-			old_group=terminal.group
+			old_group = terminal.group
 			if CLUSTERS[cluster]['groupby'] == True:
-				groupname = str(random.randint(0, 1000))+"-"+cluster
-				terminal.really_create_group(term_window,groupname)
+				groupname = str(random.randint(0, 999)) + "-" + cluster
+				terminal.really_create_group(term_window, groupname)
 			else:
-				groupname='none'
-			self.split_terminal(focussed_terminal, servers, user, term_window, cluster,groupname)
-			#Set old window back to the last group, as really_create_group sets the window to the specified group
-			terminal.set_group(term_window,old_group)
+				groupname = 'none'
+			self.split_terminal(focussed_terminal, servers, user,
+					term_window, cluster, groupname)
+			# Set old window back to the last group, as really_create_group
+			# sets the window to the specified group
+			terminal.set_group(term_window, old_group)
 
 
 	def split_terminal(self, terminal, servers, user, window, cluster, groupname):
-	# Splits the window horizontal, the split count is limited by the count of servers given to the function
+	# Splits the window, the split count is limited by
+	# the count of servers given to the function
 		if CLUSTERS[cluster]['groupby'] == True:
-			terminal.set_group(window,groupname)
-		server_count=len(servers)
+			terminal.set_group(window, groupname)
+		server_count = len(servers)
 		if server_count == 1:
 			self.connect_server(terminal, user, servers)
-			server_count-=1
+			server_count -= 1
 		if server_count > 1:
-			server1=servers[:len(servers)/2]
-			server2=servers[len(servers)/2:]
+			server1 = servers[:len(servers)/2]
+			server2 = servers[len(servers)/2:]
 
 		visible_terminals_temp = window.get_visible_terminals()
 
@@ -121,16 +125,16 @@ class ClusterConnect(plugin.Plugin):
 					terminal2 = visible_terminal
 
 		if server_count > 1:
-			self.split_terminal(terminal,server1,user,window,cluster,groupname)
-			self.split_terminal(terminal2,server2,user,window,cluster,groupname)
+			self.split_terminal(terminal, server1, user, window, cluster, groupname)
+			self.split_terminal(terminal2, server2, user, window, cluster, groupname)
 		elif server_count == 1:
-			self.split_terminal(terminal,servers,user,window,cluster,groupname)
+			self.split_terminal(terminal, servers, user, window, cluster, groupname)
 
 
 	def connect_server(self, terminal, user, hostname):
 		if hostname:
 			if user:
 				command = "ssh " + " -l " + user + " " + hostname[0]
-				if command[len(command)-1] != '\n':
+				if command[len(command) - 1] != '\n':
 					command = command + '\n'
 				terminal.vte.feed_child(command)
