@@ -36,10 +36,8 @@ class ClusterConnect(plugin.Plugin):
 
 		item = gtk.MenuItem('ClusterConnect')
 		menuitems.append(item)
-		
 		submenu = gtk.Menu()
 		item.set_submenu(submenu)
-		
 		clusters = CLUSTERS.keys()
 		clusters.sort()
 		for cluster in clusters:
@@ -48,11 +46,17 @@ class ClusterConnect(plugin.Plugin):
 			#If there are more then one users defined we have to split the selection for those usernames
 			if len(CLUSTERS[cluster]['user']) > 1:
 				users = CLUSTERS[cluster]['user']
+
+				#Add a submenu for cluster with more than one user
+				cluster_menu = gtk.MenuItem(cluster)
+				submenu.append(cluster_menu)
+				cluster_sub = gtk.Menu()
+				cluster_menu.set_submenu(cluster_sub)
+
 				for user in users:
-					name = cluster+" - "+user
-					menuitem = gtk.MenuItem(name)
+					menuitem = gtk.MenuItem(user)
 					menuitem.connect("activate", self.connect_cluster, terminal, cluster, user)
-					submenu.append(menuitem)
+					cluster_sub.append(menuitem)
 			else:
 				menuitem = gtk.MenuItem(cluster)
 				menuitem.connect("activate", self.connect_cluster, terminal, cluster, CLUSTERS[cluster]['user'][0])
@@ -61,7 +65,7 @@ class ClusterConnect(plugin.Plugin):
 		menuitem = gtk.SeparatorMenuItem()
 		submenu.append(menuitem)
 
-	
+
 	def connect_cluster(self, widget, terminal, cluster, user):
 		if CLUSTERS.has_key(cluster):
 			#get the first tab and add a new one so you don't need to care about which window is focused
