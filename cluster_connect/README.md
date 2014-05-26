@@ -1,7 +1,9 @@
 ClusterConnect
 ==============
 This plugin allows you to connect to different servers with a specified username.
-It adds a new tab to Terminator and splist the window as needed and connect to the specified servers.
+It adds a new tab to Terminator and splits the window as needed.
+
+
 
 If you specify groupby as True the plugin adds the new terminals to a group.
 You will be able to send the same commands to all servers.
