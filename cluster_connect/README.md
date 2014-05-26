@@ -19,6 +19,7 @@ Installation
         cp cluster_connect.py ~/.config/terminator/plugins/
         cp cluster_connect_config.py ~/.config/terminator/plugins/
 
+2. Enable Plugin in 'Context-Menu -> Preferences -> Plugins -> ClusterConnect'
 
 Setup
 =====
