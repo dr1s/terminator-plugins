@@ -103,9 +103,7 @@ class ClusterConnect(plugin.Plugin):
 		if CLUSTERS[cluster]['groupby'] == True:
 			terminal.set_group(window, groupname)
 		server_count = len(servers)
-		if server_count == 1:
-			self.connect_server(terminal, user, servers)
-			server_count -= 1
+
 		if server_count > 1:
 			server1 = servers[:len(servers)/2]
 			server2 = servers[len(servers)/2:]
@@ -114,7 +112,7 @@ class ClusterConnect(plugin.Plugin):
 
 		if server_count > 5 :
 			terminal.key_split_vert()
-		elif server_count-1 > 0:
+		elif server_count > 1:
 			terminal.key_split_horiz()
 
 		visible_terminals = window.get_visible_terminals()
@@ -123,18 +121,21 @@ class ClusterConnect(plugin.Plugin):
 			for visible_terminal in visible_terminals:
 				if not visible_terminal in visible_terminals_temp:
 					terminal2 = visible_terminal
-
-		if server_count > 1:
 			self.split_terminal(terminal, server1, user, window, cluster, groupname)
 			self.split_terminal(terminal2, server2, user, window, cluster, groupname)
+
 		elif server_count == 1:
-			self.split_terminal(terminal, servers, user, window, cluster, groupname)
+			self.connect_server(terminal, user, servers,)
 
 
 	def connect_server(self, terminal, user, hostname):
 		if hostname:
 			if user:
-				command = "ssh " + " -l " + user + " " + hostname[0]
+				if agent:
+					command = "ssh -A" + " -l " + user + " " + hostname[0]
+				else
+					command = "ssh" + " -l " + user + " " + hostname[0]
+
 				if command[len(command) - 1] != '\n':
 					command = command + '\n'
 				terminal.vte.feed_child(command)
