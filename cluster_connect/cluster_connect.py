@@ -43,28 +43,21 @@ class ClusterConnect(plugin.Plugin):
 		for cluster in clusters:
 			if not CLUSTERS[cluster].get('enabled', True):
 				continue
-			# If there are more then one users defined we have to
-			# split the selection for those usernames
-			if len(CLUSTERS[cluster]['user']) > 1:
-				users = CLUSTERS[cluster]['user']
+			# split the selection for the usernames
+			users = CLUSTERS[cluster]['user']
+			users.append('current')
 
-				#Add a submenu for cluster with more than one user
-				cluster_menu = gtk.MenuItem(cluster)
-				submenu.append(cluster_menu)
-				cluster_sub = gtk.Menu()
-				cluster_menu.set_submenu(cluster_sub)
+			#Add a submenu for cluster users
+			cluster_menu = gtk.MenuItem(cluster)
+			submenu.append(cluster_menu)
+			cluster_sub = gtk.Menu()
+			cluster_menu.set_submenu(cluster_sub)
 
-				for user in users:
-					menuitem = gtk.MenuItem(user)
-					menuitem.connect("activate", self.connect_cluster, terminal,
-						cluster, user)
-					cluster_sub.append(menuitem)
-			else:
-				menuitem = gtk.MenuItem(cluster)
+			for user in users:
+				menuitem = gtk.MenuItem(user)
 				menuitem.connect("activate", self.connect_cluster, terminal,
-					cluster, CLUSTERS[cluster]['user'][0])
-				submenu.append(menuitem)
-
+					cluster, user)
+				cluster_sub.append(menuitem)
 
 
 	def connect_cluster(self, widget, terminal, cluster, user):
@@ -125,17 +118,21 @@ class ClusterConnect(plugin.Plugin):
 			self.split_terminal(terminal2, server2, user, window, cluster, groupname)
 
 		elif server_count == 1:
-			self.connect_server(terminal, user, servers,)
+			if not CLUSTERS[cluster].get('agent', True):
+				self.connect_server(terminal, user, servers, False)
+			else:
+				self.connect_server(terminal, user, servers, True)
 
 
-	def connect_server(self, terminal, user, hostname):
+	def connect_server(self, terminal, user, hostname, agent):
 		if hostname:
-			if user:
-				if agent:
-					command = "ssh -A" + " -l " + user + " " + hostname[0]
-				else
-					command = "ssh" + " -l " + user + " " + hostname[0]
+			command = "ssh"
+			if user != "current":
+				command = command + " -l " + user
+			if agent:
+				command = command +  " -A"
+			command = command + " " + hostname[0]
 
-				if command[len(command) - 1] != '\n':
-					command = command + '\n'
+			if command[len(command) - 1] != '\n':
+				command = command + '\n'
 				terminal.vte.feed_child(command)

@@ -1,19 +1,24 @@
 CLUSTERS = {
+
 	"test8" : {
-		"user" : ["drs","dr1s"],
-		"server" : ["roanoke","westeros","roanoke","westeros","roanoke","westeros","roanoke","westeros"],
+		"user" : ["user1","user2","user3",],
+		"server" : ["test1","test2","test3","test4","test5","test6","test7","test8"],
 		"groupby": True,
+		"agent": True,
 	},
+
 	"test6" : {
-		"user" : ["drs",],
-		"server" : ["roanoke","westeros","roanoke","westeros","westeros",],
+		"user" : ["user1","user2","user3",],
+		"server" : ["test1","test2","test3","test4","test5","test6",],
 		"groupby": True,
+		"agent": False,
 	},
+
 	"test3" : {
-		"user" : ["drs",],
-		"server" : ["roanoke","westeros","roanoke",],
+		"user" : ["user1","user2","user3",],
+		"server" : ["test1","test2","test3",],
 		"groupby": True,
+		"agent": True,
 	},
 
 }
-
