@@ -45,8 +45,7 @@ class ClusterConnect(plugin.Plugin):
 				continue
 			# split the selection for the usernames
 			users = CLUSTERS[cluster]['user']
-                        if not 'current' in users:
-                            users.append('current')
+			users.append('current')
 
 			#Add a submenu for cluster users
 			cluster_menu = gtk.MenuItem(cluster)
