@@ -23,11 +23,11 @@ Installation
 
 2. Edit `~/.config/terminator/plugins/cluster_connect_config.py`,for example:
 Options:
-- user: Array of Usernames
-- server: Array of servers ip or hostnames. The plugin just passes it to ssh
-- groupby: True or False, If you specify as true the terminals will be grouped.
+  - user: Array of Usernames
+  - server: Array of servers ip or hostnames. The plugin just passes it to ssh
+  - groupby: True or False, If you specify as true the terminals will be grouped.
            Your sending the commands to the whole group from the start.
-- agent: True or False, if true then ssh agent is enabled and -A Option is added to command
+  - agent: True or False, if true then ssh agent is enabled and -A Option is added to command
 
 
 
