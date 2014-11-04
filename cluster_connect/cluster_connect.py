@@ -59,7 +59,7 @@ class ClusterConnect(plugin.Plugin):
                 submenu.append(cluster_menu_servers)
                 cluster_sub_servers = gtk.Menu()
                 cluster_menu_servers.set_submenu(cluster_sub_servers)
-                for server in servers: 
+                for server in servers:
                     #add submenu for users
                     cluster_menu_users = gtk.MenuItem(server)
                     cluster_sub_servers.append(cluster_menu_users)
@@ -92,15 +92,12 @@ class ClusterConnect(plugin.Plugin):
 					focussed_terminal = visible_terminal
 
                         if server_connect != 'cluster':
-			    if not CLUSTERS[cluster].get('agent', True):
-				self.connect_server(focussed_terminal, user, server_connect, False)
-			    else:
-				self.connect_server(focussed_terminal, user, server_connect, True)
+				self.connect_server(focussed_terminal, user, server_connect, cluster)
                         else:
 			    #Create a group, if the terminals should be grouped
 		            servers = config['server']
 		            servers.sort()
-                
+
                             if 'all' in servers:
                                 servers.remove('all')
 
@@ -145,18 +142,17 @@ class ClusterConnect(plugin.Plugin):
 			self.split_terminal(terminal2, server2, user, window, cluster, groupname)
 
 		elif server_count == 1:
-			if not CLUSTERS[cluster].get('agent', True):
-				self.connect_server(terminal, user, servers[0], False)
-			else:
-				self.connect_server(terminal, user, servers[0], True)
+		    self.connect_server(terminal, user, servers[0], cluster)
 
 
-	def connect_server(self, terminal, user, hostname, agent):
+	def connect_server(self, terminal, user, hostname, cluster):
 		if hostname:
 			command = "ssh"
 			if user != "current":
 				command = command + " -l " + user
-			if agent:
+
+                        #check if ssh agent should be used
+                        if CLUSTERS[cluster].get('agent', True):
 				command = command +  " -A"
 			command = command + " " + hostname
 
