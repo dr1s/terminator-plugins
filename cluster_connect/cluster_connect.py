@@ -34,34 +34,51 @@ class ClusterConnect(plugin.Plugin):
 
 	def callback(self, menuitems, menu, terminal):
 
-		item = gtk.MenuItem('ClusterConnect')
-		menuitems.append(item)
-		submenu = gtk.Menu()
-		item.set_submenu(submenu)
-		clusters = CLUSTERS.keys()
-		clusters.sort()
-		for cluster in clusters:
-			if not CLUSTERS[cluster].get('enabled', True):
-				continue
-			# split the selection for the usernames
-			users = CLUSTERS[cluster]['user']
-		        if not 'current' in users:
-                            users.append('current')
+            item = gtk.MenuItem('ClusterConnect')
+            menuitems.append(item)
+	    submenu = gtk.Menu()
+	    item.set_submenu(submenu)
+	    clusters = CLUSTERS.keys()
+	    clusters.sort()
+	    for cluster in clusters:
+		if not CLUSTERS[cluster].get('enabled', True):
+		    continue
+                #Get users and add current to connect with current user
+                users = CLUSTERS[cluster]['user']
+                users.sort()
+                if not 'current' in users:
+                    users.insert(0,'current')
+                #Get servers and insert all for cluster connect
+                servers = CLUSTERS[cluster]['server']
+                servers.sort()
+                if not 'all' in servers:
+                    servers.insert(0,'all')
 
-			#Add a submenu for cluster users
-			cluster_menu = gtk.MenuItem(cluster)
-			submenu.append(cluster_menu)
-			cluster_sub = gtk.Menu()
-			cluster_menu.set_submenu(cluster_sub)
+                #Add a submenu for cluster servers
+                cluster_menu_servers = gtk.MenuItem(cluster)
+                submenu.append(cluster_menu_servers)
+                cluster_sub_servers = gtk.Menu()
+                cluster_menu_servers.set_submenu(cluster_sub_servers)
+                for server in servers: 
+                    #add submenu for users
+                    cluster_menu_users = gtk.MenuItem(server)
+                    cluster_sub_servers.append(cluster_menu_users)
+                    cluster_sub_users = gtk.Menu()
+                    cluster_menu_users.set_submenu(cluster_sub_users)
+                    for user in users:
+		        menuitem = gtk.MenuItem(user)
+                        if server != "all":
+                            menuitem.connect("activate", self.connect_cluster, terminal,
+                                     cluster, user, server)
+                        else:
+		            menuitem.connect("activate", self.connect_cluster, terminal,
+                                     cluster, user, 'cluster')
+		        cluster_sub_users.append(menuitem)
 
-			for user in users:
-				menuitem = gtk.MenuItem(user)
-				menuitem.connect("activate", self.connect_cluster, terminal,
-					cluster, user)
-				cluster_sub.append(menuitem)
 
+	def connect_cluster(self, widget, terminal, cluster, user, server_connect):
+	        config = CLUSTERS[cluster]
 
-	def connect_cluster(self, widget, terminal, cluster, user):
 		if CLUSTERS.has_key(cluster):
 			# get the first tab and add a new one so you don't need to care
 			# about which window is focused
@@ -74,21 +91,30 @@ class ClusterConnect(plugin.Plugin):
 				if visible_terminal.vte.is_focus():
 					focussed_terminal = visible_terminal
 
-			config = CLUSTERS[cluster]
-			servers = config['server']
-			servers.sort()
-			#Create a group, if the terminals should be grouped
-			old_group = terminal.group
-			if CLUSTERS[cluster]['groupby'] == True:
+                        if server_connect != 'cluster':
+			    if not CLUSTERS[cluster].get('agent', True):
+				self.connect_server(focussed_terminal, user, server_connect, False)
+			    else:
+				self.connect_server(focussed_terminal, user, server_connect, True)
+                        else:
+			    #Create a group, if the terminals should be grouped
+		            servers = config['server']
+		            servers.sort()
+                
+                            if 'all' in servers:
+                                servers.remove('all')
+
+			    old_group = terminal.group
+			    if CLUSTERS[cluster]['groupby'] == True:
 				groupname = str(random.randint(0, 999)) + "-" + cluster
 				terminal.really_create_group(term_window, groupname)
-			else:
+			    else:
 				groupname = 'none'
-			self.split_terminal(focussed_terminal, servers, user,
+			    self.split_terminal(focussed_terminal, servers, user,
 					term_window, cluster, groupname)
-			# Set old window back to the last group, as really_create_group
-			# sets the window to the specified group
-			terminal.set_group(term_window, old_group)
+			    # Set old window back to the last group, as really_create_group
+			    # sets the window to the specified group
+			    terminal.set_group(term_window, old_group)
 
 
 	def split_terminal(self, terminal, servers, user, window, cluster, groupname):
@@ -120,9 +146,9 @@ class ClusterConnect(plugin.Plugin):
 
 		elif server_count == 1:
 			if not CLUSTERS[cluster].get('agent', True):
-				self.connect_server(terminal, user, servers, False)
+				self.connect_server(terminal, user, servers[0], False)
 			else:
-				self.connect_server(terminal, user, servers, True)
+				self.connect_server(terminal, user, servers[0], True)
 
 
 	def connect_server(self, terminal, user, hostname, agent):
@@ -132,7 +158,7 @@ class ClusterConnect(plugin.Plugin):
 				command = command + " -l " + user
 			if agent:
 				command = command +  " -A"
-			command = command + " " + hostname[0]
+			command = command + " " + hostname
 
 			if command[len(command) - 1] != '\n':
 				command = command + '\n'
