@@ -32,7 +32,20 @@ AVAILABLE = ['ClusterConnect']
 class ClusterConnect(plugin.Plugin):
 	capabilities = ['terminal_menu']
 
-	def callback(self, menuitems, menu, terminal):
+
+        def get_property(self, cluster, prop):
+            #Check if property and Cluster exsist and return if true else return false
+
+            if CLUSTERS.has_key(cluster):
+                if CLUSTERS[cluster].has_key(prop):
+                    return CLUSTERS[cluster][prop]
+                else:
+                    return False
+            else:
+                return False
+
+
+        def callback(self, menuitems, menu, terminal):
 
             item = gtk.MenuItem('ClusterConnect')
             menuitems.append(item)
@@ -41,18 +54,16 @@ class ClusterConnect(plugin.Plugin):
 	    clusters = CLUSTERS.keys()
 	    clusters.sort()
 	    for cluster in clusters:
-		if not CLUSTERS[cluster].get('enabled', True):
-		    continue
                 #Get users and add current to connect with current user
-                users = CLUSTERS[cluster]['user']
+                users = self.get_property(cluster, 'user')
                 users.sort()
                 if not 'current' in users:
                     users.insert(0,'current')
                 #Get servers and insert all for cluster connect
-                servers = CLUSTERS[cluster]['server']
+                servers = self.get_property(cluster, 'server')
                 servers.sort()
                 if not 'all' in servers:
-                    servers.insert(0,'all')
+                    servers.insert(0, 'all')
 
                 #Add a submenu for cluster servers
                 cluster_menu_servers = gtk.MenuItem(cluster)
@@ -77,7 +88,6 @@ class ClusterConnect(plugin.Plugin):
 
 
 	def connect_cluster(self, widget, terminal, cluster, user, server_connect):
-	        config = CLUSTERS[cluster]
 
 		if CLUSTERS.has_key(cluster):
 			# get the first tab and add a new one so you don't need to care
@@ -95,14 +105,14 @@ class ClusterConnect(plugin.Plugin):
 				self.connect_server(focussed_terminal, user, server_connect, cluster)
                         else:
 			    #Create a group, if the terminals should be grouped
-		            servers = config['server']
+		            servers = self.get_property(cluster, 'server')
 		            servers.sort()
 
                             if 'all' in servers:
                                 servers.remove('all')
 
 			    old_group = terminal.group
-			    if CLUSTERS[cluster]['groupby'] == True:
+                            if self.get_property(cluster, 'groupby'):
 				groupname = str(random.randint(0, 999)) + "-" + cluster
 				terminal.really_create_group(term_window, groupname)
 			    else:
@@ -117,24 +127,23 @@ class ClusterConnect(plugin.Plugin):
 	def split_terminal(self, terminal, servers, user, window, cluster, groupname):
 	# Splits the window, the split count is limited by
 	# the count of servers given to the function
-		if CLUSTERS[cluster]['groupby'] == True:
+		if self.get_property(cluster,'groupby'):
 			terminal.set_group(window, groupname)
 		server_count = len(servers)
 
 		if server_count > 1:
-			server1 = servers[:len(servers)/2]
-			server2 = servers[len(servers)/2:]
-
-		visible_terminals_temp = window.get_visible_terminals()
+		        visible_terminals_temp = window.get_visible_terminals()
+			server1 = servers[:server_count/2]
+			server2 = servers[server_count/2:]
 
 		if server_count > 5 :
 			terminal.key_split_vert()
 		elif server_count > 1:
 			terminal.key_split_horiz()
 
-		visible_terminals = window.get_visible_terminals()
 
 		if server_count > 1:
+		        visible_terminals = window.get_visible_terminals()
 			for visible_terminal in visible_terminals:
 				if not visible_terminal in visible_terminals_temp:
 					terminal2 = visible_terminal
@@ -152,7 +161,7 @@ class ClusterConnect(plugin.Plugin):
 				command = command + " -l " + user
 
                         #check if ssh agent should be used
-                        if CLUSTERS[cluster].get('agent', True):
+                        if self.get_property(cluster,'agent'):
 				command = command +  " -A"
 			command = command + " " + hostname
 
