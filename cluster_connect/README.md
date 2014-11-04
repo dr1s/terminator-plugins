@@ -31,20 +31,20 @@ Options:
 
 
 
-		CLUSTERS = {
-			"test1" : {
-				"user" : ["user1","user2"],
-				"server" : ["server1","server2","server3","server4","server5","server6","server7","server8",],
-				"groupby": True,
-        "agent": False,
-			},
-			"test2" : {
-				"user" : ["user3",],
-				"server" : ["server1","server2","server3","server4",],
-				"groupby": False,
-        "agent": True,
-			},
-		}
+    		CLUSTERS = {
+		    	"test1" : {
+				    "user" : ["user1","user2"],
+				    "server" : ["server1","server2","server3","server4","server5","server6","server7","server8",],
+				    "groupby": True,
+            "agent": False,
+			    },
+			    "test2" : {
+				    "user" : ["user3",],
+				    "server" : ["server1","server2","server3","server4",],
+				    "groupby": False,
+            "agent": True,
+			    },
+		    }
 
 3. Restart Terminator.
 
