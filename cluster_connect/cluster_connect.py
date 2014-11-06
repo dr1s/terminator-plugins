@@ -62,8 +62,9 @@ class ClusterConnect(plugin.Plugin):
                 #Get servers and insert all for cluster connect
                 servers = self.get_property(cluster, 'server')
                 servers.sort()
-                if not 'all' in servers:
-                    servers.insert(0, 'all')
+		if len(servers) > 1:
+			if not 'all' in servers:
+				servers.insert(0, 'all')
 
                 #Add a submenu for cluster servers
                 cluster_menu_servers = gtk.MenuItem(cluster)
