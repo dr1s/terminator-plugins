@@ -72,7 +72,7 @@ class ClusterConnect(plugin.Plugin):
 				submenu.append(cluster_menu_servers)
 				cluster_sub_servers = gtk.Menu()
 				cluster_menu_servers.set_submenu(cluster_sub_servers)
-			for server in servers:
+				for server in servers:
 				#add submenu for users
 					cluster_menu_users = gtk.MenuItem(server)
 					cluster_sub_servers.append(cluster_menu_users)
