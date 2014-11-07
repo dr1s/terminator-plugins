@@ -94,12 +94,8 @@ class ClusterConnect(plugin.Plugin):
 				cluster_menu_users.set_submenu(cluster_sub_users)
 				for user in users:
 					menuitem = gtk.MenuItem(user)
-					if server != "all":
-						menuitem.connect("activate", self.connect_cluster, terminal,
-							cluster, user, server)
-					else:
-						menuitem.connect("activate", self.connect_cluster, terminal,
-							cluster, user, 'cluster')
+					menuitem.connect("activate", self.connect_cluster, terminal,
+							cluster, user, servers[0])
 					cluster_sub_users.append(menuitem)
 
 
