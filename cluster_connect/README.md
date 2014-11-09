@@ -28,23 +28,10 @@ Options:
   - groupby: True or False, If you specify as true the terminals will be grouped.
            Your sending the commands to the whole group from the start.
   - agent: True or False, if true then ssh agent is enabled and -A Option is added to command
+  - port: set ssh port to something else than default
+  - identity: specify path to a ssh-key-file
+  - verbose: 1, 2 or 3 for -v, -vv or -vvv
 
-
-
-    		CLUSTERS = {
-		    	"test1" : {
-				    "user" : ["user1","user2"],
-				    "server" : ["server1","server2","server3","server4","server5","server6","server7","server8",],
-				    "groupby": True,
-            "agent": False,
-			    },
-			    "test2" : {
-				    "user" : ["user3",],
-				    "server" : ["server1","server2","server3","server4",],
-				    "groupby": False,
-            "agent": True,
-			    },
-		    }
 
 3. Restart Terminator.
 
