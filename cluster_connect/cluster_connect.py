@@ -160,10 +160,6 @@ class ClusterConnect(plugin.Plugin):
 			terminal.key_split_vert()
 		elif option == 'T':
 			term_window.tab_new(term_window.get_focussed_terminal())
-			visible_terminals = term_window.get_visible_terminals()
-			for visible_terminal in visible_terminals:
-				if visible_terminal.vte.is_focus():
-					focussed_terminal = visible_terminal
 
 		visible_terminals = term_window.get_visible_terminals()
 		for visible_terminal in visible_terminals:
