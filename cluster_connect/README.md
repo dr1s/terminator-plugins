@@ -22,6 +22,7 @@ Installation
 
 
 2. Edit `~/.config/terminator/plugins/cluster_connect_config.py`,for example:
+
 Options:
   - user: Array of Usernames
   - server: Array of servers ip or hostnames. The plugin just passes it to ssh
