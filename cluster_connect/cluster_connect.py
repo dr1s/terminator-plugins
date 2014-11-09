@@ -184,9 +184,7 @@ class ClusterConnect(plugin.Plugin):
 			server1 = servers[:server_count/2]
 			server2 = servers[server_count/2:]
 
-		horiz_splits = self.get_property(cluster,'horiz_splits')
-		if horiz_splits == False:
-			horiz_splits = 5
+		horiz_splits = self.get_property(cluster, 'horiz_splits', 5)
 
 		if server_count > horiz_splits :
 			terminal.key_split_vert()

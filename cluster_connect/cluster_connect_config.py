@@ -22,7 +22,7 @@ CLUSTERS = {
 		"server" : ["test1","test2","test3",],
 		"groupby": True,
 		"agent": True,
-		"port": 2223,
+		"port": "2223",
 		"verbose": 2,
 	},
 
