@@ -24,24 +24,12 @@ import terminatorlib.plugin as plugin
 try:
 	from cluster_connect_config import CLUSTERS
 except ImportError:
-	CLUSTERS = {}
+	CLUSTERS = { "Config not found": " "}
 
 AVAILABLE = ['ClusterConnect']
 
 class ClusterConnect(plugin.Plugin):
 	capabilities = ['terminal_menu']
-
-
-	def get_property(self, cluster, prop):
-		#Check if property and Cluster exsist and return if true else return false
-
-		if CLUSTERS.has_key(cluster):
-			if CLUSTERS[cluster].has_key(prop):
-				return CLUSTERS[cluster][prop]
-			else:
-				return False
-		else:
-			return False
 
 
 	def callback(self, menuitems, menu, terminal):
@@ -57,13 +45,13 @@ class ClusterConnect(plugin.Plugin):
 			users = self.get_property(cluster, 'user')
 			users.sort()
 			if not 'current' in users:
-				users.insert(0,'current')
-				#Get servers and insert all for cluster connect
+				users.insert(0, 'current')
+				#Get servers and insert cluster for cluster connect
 			servers = self.get_property(cluster, 'server')
 			servers.sort()
 			if len(servers) > 1:
-				if not 'all' in servers:
-					servers.insert(0, 'all')
+				if not 'cluster' in servers:
+					servers.insert(0, 'cluster')
 
 			#Add a submenu for cluster servers
 			if len(servers) > 1:
@@ -79,14 +67,14 @@ class ClusterConnect(plugin.Plugin):
 					cluster_sub_users = gtk.Menu()
 					cluster_menu_users.set_submenu(cluster_sub_users)
 					for user in users:
-						menuitem = gtk.MenuItem(user)
-						if server != "all":
-							menuitem.connect("activate", self.connect_cluster,
-								terminal,cluster, user, server)
+						if server != 'cluster':
+							self.add_split_submenu(terminal, cluster,
+								user, servers, cluster_sub_users)
 						else:
-							menuitem.connect("activate", self.connect_cluster,
+							menuitem = gtk.MenuItem(user)
+							menuitem.connect('activate', self.connect_cluster,
 								terminal, cluster, user, 'cluster')
-						cluster_sub_users.append(menuitem)
+							cluster_sub_users.append(menuitem)
 			else:
 				#If there is just one server, don't add a server submenu
 				cluster_menu_users = gtk.MenuItem(cluster)
@@ -94,10 +82,33 @@ class ClusterConnect(plugin.Plugin):
 				cluster_sub_users = gtk.Menu()
 				cluster_menu_users.set_submenu(cluster_sub_users)
 				for user in users:
-					menuitem = gtk.MenuItem(user)
-					menuitem.connect("activate", self.connect_cluster, terminal,
-							cluster, user, servers[0])
-					cluster_sub_users.append(menuitem)
+					#Add menu for split and new tab
+					self.add_split_submenu(terminal, cluster, user,
+						servers, cluster_sub_users)
+
+
+	def add_split_submenu(self, terminal, cluster, user, servers, cluster_menu_sub):
+		#Add a menu if you connect to just one server
+
+		cluster_menu_split = gtk.MenuItem(user)
+		cluster_menu_sub.append(cluster_menu_split)
+		cluster_sub_split = gtk.Menu()
+		cluster_menu_split.set_submenu(cluster_sub_split)
+
+		menuitem = gtk.MenuItem('Horizontal Split')
+		menuitem.connect('activate', self.connect_server,
+			terminal,cluster, user, servers[0], 'H')
+		cluster_sub_split.append(menuitem)
+
+		menuitem = gtk.MenuItem('Vertical Split')
+		menuitem.connect('activate', self.connect_server,
+			terminal, cluster, user, servers[0], 'V')
+		cluster_sub_split.append(menuitem)
+
+		menuitem = gtk.MenuItem('New Tab')
+		menuitem.connect('activate', self.connect_server,
+			terminal, cluster, user, servers[0], 'T')
+		cluster_sub_split.append(menuitem)
 
 
 	def connect_cluster(self, widget, terminal, cluster, user, server_connect):
@@ -114,35 +125,57 @@ class ClusterConnect(plugin.Plugin):
 				if visible_terminal.vte.is_focus():
 					focussed_terminal = visible_terminal
 
-			if server_connect != 'cluster':
-				#if there is just one server, connect to that server and dont split the terminal
-				self.connect_server(focussed_terminal, user, server_connect, cluster)
+			#Create a group, if the terminals should be grouped
+			servers = self.get_property(cluster, 'server')
+			servers.sort()
+
+			#Remove cluster from server, there shouldn't be a server named cluster
+			if 'cluster' in servers:
+				servers.remove('cluster')
+
+			old_group = terminal.group
+			if self.get_property(cluster, 'groupby'):
+				groupname = cluster + "-" + str(random.randint(0, 999))
+				terminal.really_create_group(term_window, groupname)
 			else:
-				#Create a group, if the terminals should be grouped
-				servers = self.get_property(cluster, 'server')
-				servers.sort()
+				groupname = 'none'
+			self.split_terminal(focussed_terminal, servers, user,
+				term_window, cluster, groupname)
+			# Set old window back to the last group, as really_create_group
+			# sets the window to the specified group
+			terminal.set_group(term_window, old_group)
 
-				#Remove all from server, there shouldn't be a server named all
-				if 'all' in servers:
-					servers.remove('all')
 
-				old_group = terminal.group
-				if self.get_property(cluster, 'groupby'):
-					groupname = cluster + "-" + str(random.randint(0, 999))
-					terminal.really_create_group(term_window, groupname)
-				else:
-					groupname = 'none'
-				self.split_terminal(focussed_terminal, servers, user,
-					term_window, cluster, groupname)
-				# Set old window back to the last group, as really_create_group
-				# sets the window to the specified group
-				terminal.set_group(term_window, old_group)
+	def connect_server(self, widget, terminal, cluster, user,
+			server_connect, option):
+
+		focussed_terminal = None
+		term_window = terminal.terminator.windows[0]
+		#if there is just one server, connect to that server and dont split the terminal
+		visible_terminals_temp = term_window.get_visible_terminals()
+
+		if option == 'H':
+			terminal.key_split_horiz()
+		elif option == 'V':
+			terminal.key_split_vert()
+		elif option == 'T':
+			term_window.tab_new(term_window.get_focussed_terminal())
+			visible_terminals = term_window.get_visible_terminals()
+			for visible_terminal in visible_terminals:
+				if visible_terminal.vte.is_focus():
+					focussed_terminal = visible_terminal
+
+		visible_terminals = term_window.get_visible_terminals()
+		for visible_terminal in visible_terminals:
+			if not visible_terminal in visible_terminals_temp:
+				terminal2 = visible_terminal
+		self.start_ssh(terminal2, user, server_connect, cluster)
 
 
 	def split_terminal(self, terminal, servers, user, window, cluster, groupname):
 	# Splits the window, the split count is limited by
 	# the count of servers given to the function
-		if self.get_property(cluster,'groupby'):
+		if self.get_property(cluster, 'groupby'):
 			terminal.set_group(window, groupname)
 		server_count = len(servers)
 
@@ -156,47 +189,60 @@ class ClusterConnect(plugin.Plugin):
 		elif server_count > 1:
 			terminal.key_split_horiz()
 
-
 		if server_count > 1:
 			visible_terminals = window.get_visible_terminals()
 			for visible_terminal in visible_terminals:
 				if not visible_terminal in visible_terminals_temp:
 					terminal2 = visible_terminal
-			self.split_terminal(terminal, server1, user, window, cluster, groupname)
-			self.split_terminal(terminal2, server2, user, window, cluster, groupname)
+			self.split_terminal(terminal, server1, user, window,
+				cluster, groupname)
+			self.split_terminal(terminal2, server2, user, window,
+				cluster, groupname)
 
 		elif server_count == 1:
-			self.connect_server(terminal, user, servers[0], cluster)
+			self.start_ssh(terminal, user, servers[0], cluster)
 
 
-	def connect_server(self, terminal, user, hostname, cluster):
+	def get_property(self, cluster, prop):
+		#Check if property and Cluster exsist and return if true else return false
+
+		if CLUSTERS.has_key(cluster):
+			if CLUSTERS[cluster].has_key(prop):
+				return CLUSTERS[cluster][prop]
+			else:
+				return False
+		else:
+			return False
+
+
+	def start_ssh(self, terminal, user, hostname, cluster):
 		#Function to generate the ssh command, with specified options
 
 		if hostname:
 			command = "ssh"
 
 			#get username, if user is current don't set user
-			if user != "current":
+			if user != 'current':
 				command = command + " -l " + user
 
 			#check if ssh agent should be used, if not disable it
-			if self.get_property(cluster,'agent'):
+			if self.get_property(cluster, 'agent'):
 				command = command +  " -A"
 			else:
 				command = command +  " -a"
 
 			#If port is configured, get that port
-			port = self.get_property(cluster,'port')
+			port = self.get_property(cluster, 'port')
 			if port:
 				command = command + " -p " + port
 
 			#If ssh-key is specified, use that key
-			key = self.get_property(cluster,'identity')
+			key = self.get_property(cluster, 'identity')
 			if key:
-				command = command + " -i " + identity
+				command = command + " -i " + key
 
 			#get verbosity level
-			verbose = self.get_proptery(cluster,"verbose")
+			verbose = self.get_property(cluster, 'verbose')
 			if verbose:
 				if verbose == 1:
 					command = command + " -v"
@@ -204,6 +250,8 @@ class ClusterConnect(plugin.Plugin):
 					command = command + " -vv"
 				elif verbose == 3:
 					command = command + " -vvv"
+
+			command = command + " " + hostname
 
 			#Check if a command was generated an pass it to the terminal
 			if command[len(command) - 1] != '\n':
