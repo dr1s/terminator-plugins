@@ -21,17 +21,17 @@ Installation
         cp cluster_connect_config.py ~/.config/terminator/plugins/
 
 
-2. Edit `~/.config/terminator/plugins/cluster_connect_config.py`,for example:
+2. Edit `~/.config/terminator/plugins/cluster_connect_config.py`, for example:
 
-Options:
-  - user: Array of Usernames
-  - server: Array of servers ip or hostnames. The plugin just passes it to ssh
-  - groupby: True or False, If you specify as true the terminals will be grouped.
-           Your sending the commands to the whole group from the start.
-  - agent: True or False, if true then ssh agent is enabled and -A Option is added to command
-  - port: set ssh port to something else than default
-  - identity: specify path to a ssh-key-file
-  - verbose: 1, 2 or 3 for -v, -vv or -vvv
+	Options:
+		- user: Array of Usernames
+		- server: Array of servers ip or hostnames. The plugin just passes it to ssh
+		- groupby: True or False, If you specify as true the terminals will be grouped.
+			Your sending the commands to the whole group from the start.
+		- agent: True or False, if true then ssh agent is enabled and -A Option is added to command
+		- port: set ssh port to something else than default
+		- identity: specify path to a ssh-key-file
+		- verbose: 1, 2 or 3 for -v, -vv or -vvv
 
 
 3. Restart Terminator.
