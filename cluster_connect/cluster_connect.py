@@ -1,6 +1,8 @@
 #!/usr/bin/python
 #
 #	Copyright (C) 2014 Daniel Schmitz
+#	Site: github.com/dr1s
+#
 #	This program is free software; you can redistribute it and/or
 #	modify it under the terms of the GNU General Public License
 #	as published by the Free Software Foundation; either version 2
@@ -182,7 +184,11 @@ class ClusterConnect(plugin.Plugin):
 			server1 = servers[:server_count/2]
 			server2 = servers[server_count/2:]
 
-		if server_count > 5 :
+		horiz_splits = self.get_property(cluster,'horiz_splits')
+		if horiz_splits == False:
+			horiz_splits = 5
+
+		if server_count > horiz_splits :
 			terminal.key_split_vert()
 		elif server_count > 1:
 			terminal.key_split_horiz()

@@ -33,6 +33,9 @@ Installation
 		- port: set ssh port to something else than default
 		- identity: specify path to a ssh-key-file
 		- verbose: 1, 2 or 3 for -v, -vv or -vvv
+		- current_user: True or False, if set to False user current, won't be displayed in submenu
+			default: True
+		- horiz_splits: Number of hoirzontal splits before doing a vertical split, default: 5
 
 
 3. Restart Terminator.
