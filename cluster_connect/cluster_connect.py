@@ -15,11 +15,10 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import os
 import gtk
 import random
 import terminatorlib.plugin as plugin
-from terminatorlib.translation import _
+
 
 
 try:
@@ -68,6 +67,7 @@ class ClusterConnect(plugin.Plugin):
 
 			#Add a submenu for cluster servers
 			if len(servers) > 1:
+				#Add a submenu for server, if there is more than one
 				cluster_menu_servers = gtk.MenuItem(cluster)
 				submenu.append(cluster_menu_servers)
 				cluster_sub_servers = gtk.Menu()
@@ -88,6 +88,7 @@ class ClusterConnect(plugin.Plugin):
 								terminal, cluster, user, 'cluster')
 						cluster_sub_users.append(menuitem)
 			else:
+				#If there is just one server, don't add a server submenu
 				cluster_menu_users = gtk.MenuItem(cluster)
 				submenu.append(cluster_menu_users)
 				cluster_sub_users = gtk.Menu()
@@ -114,18 +115,20 @@ class ClusterConnect(plugin.Plugin):
 					focussed_terminal = visible_terminal
 
 			if server_connect != 'cluster':
+				#if there is just one server, connect to that server and dont split the terminal
 				self.connect_server(focussed_terminal, user, server_connect, cluster)
 			else:
 				#Create a group, if the terminals should be grouped
 				servers = self.get_property(cluster, 'server')
 				servers.sort()
 
+				#Remove all from server, there shouldn't be a server named all
 				if 'all' in servers:
 					servers.remove('all')
 
 				old_group = terminal.group
 				if self.get_property(cluster, 'groupby'):
-					groupname = str(random.randint(0, 999)) + "-" + cluster
+					groupname = cluster + "-" + str(random.randint(0, 999))
 					terminal.really_create_group(term_window, groupname)
 				else:
 					groupname = 'none'
@@ -167,16 +170,42 @@ class ClusterConnect(plugin.Plugin):
 
 
 	def connect_server(self, terminal, user, hostname, cluster):
+		#Function to generate the ssh command, with specified options
+
 		if hostname:
 			command = "ssh"
+
+			#get username, if user is current don't set user
 			if user != "current":
 				command = command + " -l " + user
 
-		#check if ssh agent should be used
+			#check if ssh agent should be used, if not disable it
 			if self.get_property(cluster,'agent'):
 				command = command +  " -A"
-			command = command + " " + hostname
+			else:
+				command = command +  " -a"
 
+			#If port is configured, get that port
+			port = self.get_property(cluster,'port')
+			if port:
+				command = command + " -p " + port
+
+			#If ssh-key is specified, use that key
+			key = self.get_property(cluster,'identity')
+			if key:
+				command = command + " -i " + identity
+
+			#get verbosity level
+			verbose = self.get_proptery(cluster,"verbose")
+			if verbose:
+				if verbose == 1:
+					command = command + " -v"
+				elif verbose == 2:
+					command = command + " -vv"
+				elif verbose == 3:
+					command = command + " -vvv"
+
+			#Check if a command was generated an pass it to the terminal
 			if command[len(command) - 1] != '\n':
 				command = command + '\n'
 				terminal.vte.feed_child(command)
