@@ -44,9 +44,11 @@ class ClusterConnect(plugin.Plugin):
 			#Get users and add current to connect with current user
 			users = self.get_property(cluster, 'user')
 			users.sort()
-			if not 'current' in users:
-				users.insert(0, 'current')
-				#Get servers and insert cluster for cluster connect
+			if self.get_property(cluster, 'current_user', True):
+				if not 'current' in users:
+					users.insert(0, 'current')
+
+			#Get servers and insert cluster for cluster connect
 			servers = self.get_property(cluster, 'server')
 			servers.sort()
 			if len(servers) > 1:
@@ -199,16 +201,16 @@ class ClusterConnect(plugin.Plugin):
 			self.start_ssh(terminal, user, servers[0], cluster)
 
 
-	def get_property(self, cluster, prop):
+	def get_property(self, cluster, prop, default=False):
 		#Check if property and Cluster exsist and return if true else return false
 
 		if CLUSTERS.has_key(cluster):
 			if CLUSTERS[cluster].has_key(prop):
 				return CLUSTERS[cluster][prop]
 			else:
-				return False
+				return default
 		else:
-			return False
+			return default
 
 
 	def start_ssh(self, terminal, user, hostname, cluster):
