@@ -73,7 +73,7 @@ class ClusterConnect(plugin.Plugin):
 					for user in users:
 						if server != 'cluster':
 							self.add_split_submenu(terminal, cluster,
-								user, servers, cluster_sub_users)
+								user, server, cluster_sub_users)
 						else:
 							menuitem = gtk.MenuItem(user)
 							menuitem.connect('activate', self.connect_cluster,
@@ -88,10 +88,10 @@ class ClusterConnect(plugin.Plugin):
 				for user in users:
 					#Add menu for split and new tab
 					self.add_split_submenu(terminal, cluster, user,
-						servers, cluster_sub_users)
+						server, cluster_sub_users)
 
 
-	def add_split_submenu(self, terminal, cluster, user, servers, cluster_menu_sub):
+	def add_split_submenu(self, terminal, cluster, user, server, cluster_menu_sub):
 		#Add a menu if you connect to just one server
 
 		cluster_menu_split = gtk.MenuItem(user)
@@ -101,17 +101,17 @@ class ClusterConnect(plugin.Plugin):
 
 		menuitem = gtk.MenuItem('Horizontal Split')
 		menuitem.connect('activate', self.connect_server,
-			terminal,cluster, user, servers[0], 'H')
+			terminal,cluster, user, server, 'H')
 		cluster_sub_split.append(menuitem)
 
 		menuitem = gtk.MenuItem('Vertical Split')
 		menuitem.connect('activate', self.connect_server,
-			terminal, cluster, user, servers[0], 'V')
+			terminal, cluster, user, server, 'V')
 		cluster_sub_split.append(menuitem)
 
 		menuitem = gtk.MenuItem('New Tab')
 		menuitem.connect('activate', self.connect_server,
-			terminal, cluster, user, servers[0], 'T')
+			terminal, cluster, user, server, 'T')
 		cluster_sub_split.append(menuitem)
 
 
