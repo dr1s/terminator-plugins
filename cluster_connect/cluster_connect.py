@@ -44,8 +44,8 @@ class ClusterConnect(plugin.Plugin):
 		clusters.sort()
 		for cluster in clusters:
 			#Get users and add current to connect with current user
-			users = self.get_property(cluster, 'user')
-			users.sort()
+			users_tmp = self.get_property(cluster, 'user')
+			users = sorted(users_tmp)
 			if self.get_property(cluster, 'current_user', True):
 				if not 'current' in users:
 					users.insert(0, 'current')
