@@ -88,7 +88,7 @@ class ClusterConnect(plugin.Plugin):
 				for user in users:
 					#Add menu for split and new tab
 					self.add_split_submenu(terminal, cluster, user,
-						server, cluster_sub_users)
+						servers[0], cluster_sub_users)
 
 
 	def add_split_submenu(self, terminal, cluster, user, server, cluster_menu_sub):
@@ -101,7 +101,7 @@ class ClusterConnect(plugin.Plugin):
 
 		menuitem = gtk.MenuItem('Horizontal Split')
 		menuitem.connect('activate', self.connect_server,
-			terminal,cluster, user, server, 'H')
+			terminal, cluster, user, server, 'H')
 		cluster_sub_split.append(menuitem)
 
 		menuitem = gtk.MenuItem('Vertical Split')
