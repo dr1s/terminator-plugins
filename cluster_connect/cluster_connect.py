@@ -56,6 +56,9 @@ class ClusterConnect(plugin.Plugin):
 			if len(servers) > 1:
 				if not 'cluster' in servers:
 					servers.insert(0, 'cluster')
+				else:
+					servers.remove('cluster')
+					servers.insert(0,'cluster')
 
 			#Add a submenu for cluster servers
 			if len(servers) > 1:
