@@ -36,6 +36,7 @@ Installation
 		- current_user: True or False, if set to False user current, won't be displayed in submenu
 			default: True
 		- horiz_splits: Number of hoirzontal splits before doing a vertical split, default: 5
+		- group: Group name for submenu
 
 
 3. Restart Terminator.

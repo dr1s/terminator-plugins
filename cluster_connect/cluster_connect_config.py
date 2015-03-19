@@ -6,6 +6,7 @@ CLUSTERS = {
 		"groupby": True,
 		"horiz_splits": 4,
 		"agent": True,
+		"group": "test"
 	},
 
 	"test6" : {
@@ -14,6 +15,7 @@ CLUSTERS = {
 		"groupby": True,
 		"agent": False,
 		"horiz_splits": 6,
+		"group": "test",
 		"identity": "~/.ssh/test_rsa"
 	},
 
