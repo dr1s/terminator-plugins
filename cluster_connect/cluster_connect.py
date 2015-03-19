@@ -20,6 +20,8 @@
 import gtk
 import random
 import terminatorlib.plugin as plugin
+import getpass
+
 
 
 
@@ -29,6 +31,8 @@ except ImportError:
 	CLUSTERS = { "Config not found": " "}
 
 AVAILABLE = ['ClusterConnect']
+current_user = getpass.getuser()
+
 
 class ClusterConnect(plugin.Plugin):
 	capabilities = ['terminal_menu']
@@ -47,8 +51,8 @@ class ClusterConnect(plugin.Plugin):
 			users_tmp = self.get_property(cluster, 'user')
 			users = sorted(users_tmp)
 			if self.get_property(cluster, 'current_user', True):
-				if not 'current' in users:
-					users.insert(0, 'current')
+				if not current_user in users:
+					users.insert(0, current_user)
 
 			#Get servers and insert cluster for cluster connect
 			servers = self.get_property(cluster, 'server')
@@ -227,7 +231,7 @@ class ClusterConnect(plugin.Plugin):
 			command = "ssh"
 
 			#get username, if user is current don't set user
-			if user != 'current':
+			if user != current_user:
 				command = command + " -l " + user
 
 			#check if ssh agent should be used, if not disable it
