@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 #	Copyright (C) 2014 Daniel Schmitz
 #	Site: github.com/dr1s
 #
