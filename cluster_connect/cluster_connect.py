@@ -22,9 +22,6 @@ import random
 import terminatorlib.plugin as plugin
 import getpass
 
-
-
-
 try:
 	from cluster_connect_config import CLUSTERS
 except ImportError:
@@ -47,13 +44,16 @@ class ClusterConnect(plugin.Plugin):
 		clusters.sort()
 		groups = self.get_groups()
 		groups.sort()
-		for group in groups:
-			group_menu = gtk.MenuItem(group)
-			submenu.append(group_menu)
-			sub_groups = gtk.Menu()
-			group_menu.set_submenu(sub_groups)
-			for cluster in clusters:
-				self.add_cluster_submenu(terminal, cluster,group, sub_groups)
+		if len(groups) > 0:
+			for group in groups:
+				group_menu = gtk.MenuItem(group)
+				submenu.append(group_menu)
+				sub_groups = gtk.Menu()
+				group_menu.set_submenu(sub_groups)
+				for cluster in clusters:
+					self.add_cluster_submenu(terminal, cluster, group, sub_groups)
+			menuitem = gtk.SeparatorMenuItem()
+			submenu.append(menuitem)
 		for cluster in clusters:
 			self.add_cluster_submenu(terminal, cluster,'none', submenu)
 
@@ -80,13 +80,13 @@ class ClusterConnect(plugin.Plugin):
 		group_tmp = self.get_property(cluster, 'group', 'none')
 		if group_tmp == group:
 			if len(servers) > 1:
-				#Add a submenu for server, if there is more than one
+			#Add a submenu for server, if there is more than one
 				cluster_menu_servers = gtk.MenuItem(cluster)
 				menu_sub.append(cluster_menu_servers)
 				cluster_sub_servers = gtk.Menu()
 				cluster_menu_servers.set_submenu(cluster_sub_servers)
 				for server in servers:
-					#add submenu for users
+				#add submenu for users
 					cluster_menu_users = gtk.MenuItem(server)
 					cluster_sub_servers.append(cluster_menu_users)
 					cluster_sub_users = gtk.Menu()
@@ -101,7 +101,7 @@ class ClusterConnect(plugin.Plugin):
 								terminal, cluster, user, 'cluster')
 							cluster_sub_users.append(menuitem)
 			else:
-			#If there is just one server, don't add a server submenu
+				#If there is just one server, don't add a server submenu
 				cluster_menu_users = gtk.MenuItem(cluster)
 				submenu.append(cluster_menu_users)
 				cluster_sub_users = gtk.Menu()
@@ -244,12 +244,9 @@ class ClusterConnect(plugin.Plugin):
 		for cluster in clusters:
 			group = self.get_property(cluster,'group','none')
 			if group != 'none':
-				groups.append(group)
+				if not group in groups:
+					groups.append(group)
 		return groups
-
-
-
-
 
 	def start_ssh(self, terminal, user, hostname, cluster):
 		#Function to generate the ssh command, with specified options
