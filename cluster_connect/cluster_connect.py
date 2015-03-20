@@ -34,32 +34,26 @@ class ClusterConnect(plugin.Plugin):
 
 
 	def callback(self, menuitems, menu, terminal):
-		item = gtk.MenuItem('ClusterConnect')
-		menuitems.append(item)
-		submenu = gtk.Menu()
-		item.set_submenu(submenu)
+		submenu = self.add_submenu(menuitems, 'ClusterConnect')
 		clusters = CLUSTERS.keys()
 		clusters.sort()
 		groups = self.get_groups()
 		groups.sort()
 		if len(groups) > 0:
 			for group in groups:
-				group_menu = gtk.MenuItem(group)
-				submenu.append(group_menu)
-				sub_groups = gtk.Menu()
-				group_menu.set_submenu(sub_groups)
+				sub_groups = self.add_submenu(submenu, group)
 				for cluster in clusters:
 					self.add_cluster_submenu(terminal, cluster, group, sub_groups)
 			menuitem = gtk.SeparatorMenuItem()
 			submenu.append(menuitem)
 		for cluster in clusters:
-			self.add_cluster_submenu(terminal, cluster,'none', submenu)
+			self.add_cluster_submenu(terminal, cluster, 'none', submenu)
 
 
 	def add_cluster_submenu (self, terminal, cluster, group, menu_sub):
 		#Get users and add current to connect with current user
-		users_tmp = self.get_property(cluster, 'user')
-		users = sorted(users_tmp)
+		users = self.get_property(cluster, 'user')
+		users.sort()
 		if self.get_property(cluster, 'current_user', True):
 			if not current_user in users:
 				users.insert(0, current_user)
@@ -79,16 +73,10 @@ class ClusterConnect(plugin.Plugin):
 		if group_tmp == group:
 			if len(servers) > 1:
 			#Add a submenu for server, if there is more than one
-				cluster_menu_servers = gtk.MenuItem(cluster)
-				menu_sub.append(cluster_menu_servers)
-				cluster_sub_servers = gtk.Menu()
-				cluster_menu_servers.set_submenu(cluster_sub_servers)
+				cluster_sub_servers = self.add_submenu(menu_sub, cluster)
 				for server in servers:
 				#add submenu for users
-					cluster_menu_users = gtk.MenuItem(server)
-					cluster_sub_servers.append(cluster_menu_users)
-					cluster_sub_users = gtk.Menu()
-					cluster_menu_users.set_submenu(cluster_sub_users)
+					cluster_sub_users = self.add_submenu(cluster_sub_servers, server)
 					for user in users:
 						if server != 'cluster':
 							self.add_split_submenu(terminal, cluster,
@@ -100,10 +88,7 @@ class ClusterConnect(plugin.Plugin):
 							cluster_sub_users.append(menuitem)
 			else:
 				#If there is just one server, don't add a server submenu
-				cluster_menu_users = gtk.MenuItem(cluster)
-				submenu.append(cluster_menu_users)
-				cluster_sub_users = gtk.Menu()
-				cluster_menu_users.set_submenu(cluster_sub_users)
+				cluster_sub_users = self.add_submenu(submenu, cluster)
 				for user in users:
 				#Add menu for split and new tab
 					self.add_split_submenu(terminal, cluster, user,
@@ -112,11 +97,7 @@ class ClusterConnect(plugin.Plugin):
 
 	def add_split_submenu(self, terminal, cluster, user, server, cluster_menu_sub):
 		#Add a menu if you connect to just one server
-
-		cluster_menu_split = gtk.MenuItem(user)
-		cluster_menu_sub.append(cluster_menu_split)
-		cluster_sub_split = gtk.Menu()
-		cluster_menu_split.set_submenu(cluster_sub_split)
+		cluster_sub_split = self.add_submenu(cluster_menu_sub, user)
 
 		menuitem = gtk.MenuItem('Horizontal Split')
 		menuitem.connect('activate', self.connect_server,
@@ -132,6 +113,14 @@ class ClusterConnect(plugin.Plugin):
 		menuitem.connect('activate', self.connect_server,
 			terminal, cluster, user, server, 'T')
 		cluster_sub_split.append(menuitem)
+
+
+	def add_submenu (self, submenu, name):
+		menu = gtk.MenuItem(name)
+		submenu.append(menu)
+		menu_sub = gtk.Menu()
+		menu.set_submenu(menu_sub)
+		return menu_sub
 
 
 	def connect_cluster(self, widget, terminal, cluster, user, server_connect):
@@ -205,7 +194,7 @@ class ClusterConnect(plugin.Plugin):
 
 		horiz_splits = self.get_property(cluster, 'horiz_splits', 5)
 
-		if server_count > horiz_splits :
+		if server_count > horiz_splits:
 			terminal.key_split_vert()
 		elif server_count > 1:
 			terminal.key_split_horiz()
@@ -235,16 +224,18 @@ class ClusterConnect(plugin.Plugin):
 		else:
 			return default
 
+
 	def get_groups (self):
 		clusters = CLUSTERS.keys()
 		clusters.sort()
 		groups = []
 		for cluster in clusters:
-			group = self.get_property(cluster,'group','none')
+			group = self.get_property(cluster, 'group', 'none')
 			if group != 'none':
 				if not group in groups:
 					groups.append(group)
 		return groups
+
 
 	def start_ssh(self, terminal, user, hostname, cluster):
 		#Function to generate the ssh command, with specified options
