@@ -19,7 +19,7 @@ Installation
         mkdir -p ~/.config/terminator/plugins
         cp cluster_connect.py ~/.config/terminator/plugins/
         cp cluster_connect_config.py ~/.config/terminator/plugins/
-
+	Add config to ~/.confif/terminator/plugins/cluster_connect_config in json-format
 
 2. Edit `~/.config/terminator/plugins/cluster_connect_config.py`, for example:
 
@@ -36,7 +36,8 @@ Installation
 		- current_user: True or False, if set to False user current, won't be displayed in submenu
 			default: True
 		- horiz_splits: Number of hoirzontal splits before doing a vertical split, default: 5
-
+		- sudouser: Array of Usernames which will be called after the login with you user with `sudo -su`
+		- group: Group name for submenu
 
 3. Restart Terminator.
 
