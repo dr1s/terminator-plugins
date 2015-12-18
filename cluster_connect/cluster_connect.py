@@ -64,7 +64,7 @@ class ClusterConnect(plugin.Plugin):
         # Get users and add current to connect with current user
         users = self.get_property(cluster, 'user')
         current_user_prop = self.get_property(cluster, 'current_user', True)
-        sudo_users = self.get_property(cluster, 'sudouser')
+        sudousers = self.get_property(cluster, 'sudouser')
 
         if users:
             users.sort()
@@ -73,10 +73,8 @@ class ClusterConnect(plugin.Plugin):
         elif current_user_prop:
             users = [current_user]
             # Get sudousers for current user
-        if sudo_users:
-            sudousers = self.get_property(cluster, 'sudouser')
+        if sudousers:
             sudousers.sort()
-
             # Get servers and insert cluster for cluster connect
         servers = self.get_property(cluster, 'server')
         servers.sort()
@@ -91,39 +89,46 @@ class ClusterConnect(plugin.Plugin):
         group_tmp = self.get_property(cluster, 'group', 'none')
         # Check if users exists for cluster
         if 'users' in locals() and group_tmp == group:
-            if len(servers) > 1:
-                # Add a submenu for server, if there is more than one
-                cluster_sub_servers = self.add_submenu(menu_sub, cluster)
-                for server in servers:
-                    # add submenu for users
-                    cluster_sub_users = self.add_submenu(cluster_sub_servers, server)
-                    for user in users:
-                        if server != 'cluster':
-                            self.add_split_submenu(terminal, cluster,
-                                                   user, server, cluster_sub_users)
-                        else:
-                            menuitem = gtk.MenuItem(user)
-                            menuitem.connect('activate', self.connect_cluster,
-                                             terminal, cluster, user, 'cluster')
-                            cluster_sub_users.append(menuitem)
-                            # add submenu for sudousers
-                    if 'sudousers' in locals():
-                        for sudouser in sudousers:
-                            if server != 'cluster':
-                                self.add_split_submenu(terminal, cluster,
-                                                       sudouser, server, cluster_sub_users, True)
-                            else:
-                                menuitem = gtk.MenuItem(sudouser + " (sudo)")
-                                menuitem.connect('activate', self.connect_cluster,
-                                                 terminal, cluster, sudouser, 'cluster', True)
-                                cluster_sub_users.append(menuitem)
+            self.check_for_users_in_cluster(servers, menu_sub, cluster, terminal, users, sudousers)
+
+    def check_for_users_in_cluster(self, servers, menu_sub, cluster, terminal, users, sudousers):
+        if len(servers) > 1:
+            # Add a submenu for server, if there is more than one
+            cluster_sub_servers = self.add_submenu(menu_sub, cluster)
+            for server in servers:
+                # add submenu for users
+                cluster_sub_users = self.add_submenu(cluster_sub_servers, server)
+                self.create_cluster_sub_servers(server, users, terminal, cluster, cluster_sub_users, sudousers)
+            print "Iterated"
+        else:
+            # If there is just one server, don't add a server submenu
+            cluster_sub_users = self.add_submenu(menu_sub, cluster)
+            for user in users:
+                # Add menu for split and new tab
+                self.add_split_submenu(terminal, cluster, user,
+                                       servers[0], cluster_sub_users)
+
+    def create_cluster_sub_servers(self, server, users, terminal, cluster, cluster_sub_users, sudousers):
+        for user in users:
+            if server != 'cluster':
+                self.add_split_submenu(terminal, cluster,
+                                       user, server, cluster_sub_users)
             else:
-                # If there is just one server, don't add a server submenu
-                cluster_sub_users = self.add_submenu(menu_sub, cluster)
-                for user in users:
-                    # Add menu for split and new tab
-                    self.add_split_submenu(terminal, cluster, user,
-                                           servers[0], cluster_sub_users)
+                menuitem = gtk.MenuItem(user)
+                menuitem.connect('activate', self.connect_cluster,
+                                 terminal, cluster, user, 'cluster')
+                cluster_sub_users.append(menuitem)
+                # add submenu for sudousers
+        if 'sudousers' in locals() and sudousers:
+            for sudouser in sudousers:
+                if server != 'cluster':
+                    self.add_split_submenu(terminal, cluster,
+                                           sudouser, server, cluster_sub_users, True)
+                else:
+                    menuitem = gtk.MenuItem(sudouser + " (sudo)")
+                    menuitem.connect('activate', self.connect_cluster,
+                                     terminal, cluster, sudouser, 'cluster', True)
+                    cluster_sub_users.append(menuitem)
 
     def add_split_submenu(self, terminal, cluster, user, server, cluster_menu_sub, sudo=False):
         # Add a menu if you connect to just one server
