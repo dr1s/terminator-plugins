@@ -62,16 +62,18 @@ class ClusterConnect(plugin.Plugin):
 
     def add_cluster_submenu(self, terminal, cluster, group, menu_sub):
         # Get users and add current to connect with current user
-        if self.get_property(cluster, 'user'):
-            users = self.get_property(cluster, 'user')
+        users = self.get_property(cluster, 'user')
+        current_user_prop = self.get_property(cluster, 'current_user', True)
+        sudo_users = self.get_property(cluster, 'sudouser')
+
+        if users:
             users.sort()
-            if self.get_property(cluster, 'current_user', True):
-                if not current_user in users:
-                    users.insert(0, current_user)
-        elif self.get_property(cluster, 'current_user', True):
+            if current_user_prop and current_user not in users:
+                users.insert(0, current_user)
+        elif current_user_prop:
             users = [current_user]
             # Get sudousers for current user
-        if self.get_property(cluster, 'sudouser'):
+        if sudo_users:
             sudousers = self.get_property(cluster, 'sudouser')
             sudousers.sort()
 
@@ -79,7 +81,7 @@ class ClusterConnect(plugin.Plugin):
         servers = self.get_property(cluster, 'server')
         servers.sort()
         if len(servers) > 1:
-            if not 'cluster' in servers:
+            if 'cluster' not in servers:
                 servers.insert(0, 'cluster')
             else:
                 servers.remove('cluster')
@@ -88,45 +90,44 @@ class ClusterConnect(plugin.Plugin):
                 # Add a submenu for cluster servers
         group_tmp = self.get_property(cluster, 'group', 'none')
         # Check if users exists for cluster
-        if 'users' in locals():
-            if group_tmp == group:
-                if len(servers) > 1:
-                    # Add a submenu for server, if there is more than one
-                    cluster_sub_servers = self.add_submenu(menu_sub, cluster)
-                    for server in servers:
-                        # add submenu for users
-                        cluster_sub_users = self.add_submenu(cluster_sub_servers, server)
-                        for user in users:
+        if 'users' in locals() and group_tmp == group:
+            if len(servers) > 1:
+                # Add a submenu for server, if there is more than one
+                cluster_sub_servers = self.add_submenu(menu_sub, cluster)
+                for server in servers:
+                    # add submenu for users
+                    cluster_sub_users = self.add_submenu(cluster_sub_servers, server)
+                    for user in users:
+                        if server != 'cluster':
+                            self.add_split_submenu(terminal, cluster,
+                                                   user, server, cluster_sub_users)
+                        else:
+                            menuitem = gtk.MenuItem(user)
+                            menuitem.connect('activate', self.connect_cluster,
+                                             terminal, cluster, user, 'cluster')
+                            cluster_sub_users.append(menuitem)
+                            # add submenu for sudousers
+                    if 'sudousers' in locals():
+                        for sudouser in sudousers:
                             if server != 'cluster':
                                 self.add_split_submenu(terminal, cluster,
-                                                       user, server, cluster_sub_users)
+                                                       sudouser, server, cluster_sub_users, True)
                             else:
-                                menuitem = gtk.MenuItem(user)
+                                menuitem = gtk.MenuItem(sudouser + " (sudo)")
                                 menuitem.connect('activate', self.connect_cluster,
-                                                 terminal, cluster, user, 'cluster')
+                                                 terminal, cluster, sudouser, 'cluster', True)
                                 cluster_sub_users.append(menuitem)
-                                # add submenu for sudousers
-                        if 'sudousers' in locals():
-                            for sudouser in sudousers:
-                                if server != 'cluster':
-                                    self.add_split_submenu(terminal, cluster,
-                                                           sudouser, server, cluster_sub_users, True)
-                                else:
-                                    menuitem = gtk.MenuItem(sudouser + " (sudo)")
-                                    menuitem.connect('activate', self.connect_cluster,
-                                                     terminal, cluster, sudouser, 'cluster', True)
-                                    cluster_sub_users.append(menuitem)
-                else:
-                    # If there is just one server, don't add a server submenu
-                    cluster_sub_users = self.add_submenu(menu_sub, cluster)
-                    for user in users:
-                        # Add menu for split and new tab
-                        self.add_split_submenu(terminal, cluster, user,
-                                               servers[0], cluster_sub_users)
+            else:
+                # If there is just one server, don't add a server submenu
+                cluster_sub_users = self.add_submenu(menu_sub, cluster)
+                for user in users:
+                    # Add menu for split and new tab
+                    self.add_split_submenu(terminal, cluster, user,
+                                           servers[0], cluster_sub_users)
 
     def add_split_submenu(self, terminal, cluster, user, server, cluster_menu_sub, sudo=False):
         # Add a menu if you connect to just one server
-        if sudo == True:
+        if sudo:
             cluster_sub_split = self.add_submenu(cluster_menu_sub, user + " (sudo)")
         else:
             cluster_sub_split = self.add_submenu(cluster_menu_sub, user)
@@ -230,7 +231,7 @@ class ClusterConnect(plugin.Plugin):
         if server_count > 1:
             visible_terminals = window.get_visible_terminals()
             for visible_terminal in visible_terminals:
-                if not visible_terminal in visible_terminals_temp:
+                if visible_terminal not in visible_terminals_temp:
                     terminal2 = visible_terminal
             self.split_terminal(terminal, server1, user, window,
                                 cluster, groupname, sudo)
@@ -242,12 +243,8 @@ class ClusterConnect(plugin.Plugin):
 
     def get_property(self, cluster, prop, default=False):
         # Check if property and Cluster exsist and return if true else return false
-
-        if CLUSTERS.has_key(cluster):
-            if CLUSTERS[cluster].has_key(prop):
-                return CLUSTERS[cluster][prop]
-            else:
-                return default
+        if CLUSTERS.has_key(cluster) and CLUSTERS[cluster].has_key(prop):
+            return CLUSTERS[cluster][prop]
         else:
             return default
 
@@ -257,9 +254,8 @@ class ClusterConnect(plugin.Plugin):
         groups = []
         for cluster in clusters:
             group = self.get_property(cluster, 'group', 'none')
-            if group != 'none':
-                if not group in groups:
-                    groups.append(group)
+            if group != 'none' and group not in groups:
+                groups.append(group)
         return groups
 
     def start_ssh(self, terminal, user, hostname, cluster, sudo):
@@ -269,14 +265,14 @@ class ClusterConnect(plugin.Plugin):
             command = "ssh"
 
             # get username, if user is current don't set user
-            if (user != current_user) and (sudo == False):
+            if (user != current_user) and (sudo is False):
                 command = command + " -l " + user
 
                 # check if ssh agent should be used, if not disable it
             if self.get_property(cluster, 'agent'):
-                command = command + " -A"
+                command += " -A"
             else:
-                command = command + " -a"
+                command += " -a"
 
                 # If port is configured, get that port
             port = self.get_property(cluster, 'port')
@@ -291,12 +287,11 @@ class ClusterConnect(plugin.Plugin):
                 # get verbosity level
             verbose = self.get_property(cluster, 'verbose')
             if verbose:
-                if verbose == 1:
-                    command = command + " -v"
-                elif verbose == 2:
-                    command = command + " -vv"
-                elif verbose == 3:
-                    command = command + " -vvv"
+                count = 0
+                command = "-"
+                while count < verbose < 3:
+                    command += "v"
+                    count += 1
 
             command = command + " " + hostname
 
@@ -305,5 +300,5 @@ class ClusterConnect(plugin.Plugin):
 
                 # Check if a command was generated an pass it to the terminal
             if command[len(command) - 1] != '\n':
-                command = command + '\n'
+                command += '\n'
                 terminal.vte.feed_child(command)
