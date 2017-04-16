@@ -15,7 +15,10 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+from gi.repository import GObject
 import random
 import terminatorlib.plugin as plugin
 import getpass
@@ -55,7 +58,7 @@ class ClusterConnect(plugin.Plugin):
                 sub_groups = self.add_submenu(submenu, group)
                 for cluster in clusters:
                     self.add_cluster_submenu(terminal, cluster, group, sub_groups)
-            menuitem = gtk.SeparatorMenuItem()
+            menuitem = Gtk.SeparatorMenuItem()
             submenu.append(menuitem)
         for cluster in clusters:
             self.add_cluster_submenu(terminal, cluster, 'none', submenu)
@@ -114,7 +117,7 @@ class ClusterConnect(plugin.Plugin):
                 self.add_split_submenu(terminal, cluster,
                                        user, server, cluster_sub_users)
             else:
-                menuitem = gtk.MenuItem(user)
+                menuitem = Gtk.MenuItem(user)
                 menuitem.connect('activate', self.connect_cluster,
                                  terminal, cluster, user, 'cluster')
                 cluster_sub_users.append(menuitem)
@@ -125,7 +128,7 @@ class ClusterConnect(plugin.Plugin):
                     self.add_split_submenu(terminal, cluster,
                                            sudouser, server, cluster_sub_users, True)
                 else:
-                    menuitem = gtk.MenuItem(sudouser + " (sudo)")
+                    menuitem = Gtk.MenuItem(sudouser + " (sudo)")
                     menuitem.connect('activate', self.connect_cluster,
                                      terminal, cluster, sudouser, 'cluster', True)
                     cluster_sub_users.append(menuitem)
@@ -137,25 +140,25 @@ class ClusterConnect(plugin.Plugin):
         else:
             cluster_sub_split = self.add_submenu(cluster_menu_sub, user)
 
-        menuitem = gtk.MenuItem('Horizontal Split')
+        menuitem = Gtk.MenuItem('Horizontal Split')
         menuitem.connect('activate', self.connect_server,
                          terminal, cluster, user, server, 'H', sudo)
         cluster_sub_split.append(menuitem)
 
-        menuitem = gtk.MenuItem('Vertical Split')
+        menuitem = Gtk.MenuItem('Vertical Split')
         menuitem.connect('activate', self.connect_server,
                          terminal, cluster, user, server, 'V', sudo)
         cluster_sub_split.append(menuitem)
 
-        menuitem = gtk.MenuItem('New Tab')
+        menuitem = Gtk.MenuItem('New Tab')
         menuitem.connect('activate', self.connect_server,
                          terminal, cluster, user, server, 'T', sudo)
         cluster_sub_split.append(menuitem)
 
     def add_submenu(self, submenu, name):
-        menu = gtk.MenuItem(name)
+        menu = Gtk.MenuItem(name)
         submenu.append(menu)
-        menu_sub = gtk.Menu()
+        menu_sub = Gtk.Menu()
         menu.set_submenu(menu_sub)
         return menu_sub
 
@@ -306,4 +309,5 @@ class ClusterConnect(plugin.Plugin):
                 # Check if a command was generated an pass it to the terminal
             if command[len(command) - 1] != '\n':
                 command += '\n'
-                terminal.vte.feed_child(command)
+                terminal.vte.feed_child(command,-1)
+
