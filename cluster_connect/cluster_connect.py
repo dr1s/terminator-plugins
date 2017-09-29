@@ -102,7 +102,6 @@ class ClusterConnect(plugin.Plugin):
                 # add submenu for users
                 cluster_sub_users = self.add_submenu(cluster_sub_servers, server)
                 self.create_cluster_sub_servers(server, users, terminal, cluster, cluster_sub_users, sudousers)
-            print "Iterated"
         else:
             # If there is just one server, don't add a server submenu
             cluster_sub_users = self.add_submenu(menu_sub, cluster)
