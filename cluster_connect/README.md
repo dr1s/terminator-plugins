@@ -14,6 +14,8 @@ Autocomplete and such should be used very carefully.
 
 Installation
 ============
+The master branch currently features the GTK3 version of this plugin. The GTK2 version can be found in the branch 'gtk2'.
+
 1. Put files in `~/.config/terminator/plugins/`:
 
         git clone https://github.com/dr1s/terminator-plugins.git
