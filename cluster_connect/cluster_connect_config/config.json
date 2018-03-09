@@ -23,5 +23,11 @@
 		"agent": "TRUE",
 		"port": "2223",
 		"verbose": 2
+	},
+
+	"test4": {
+		"user": ["user1", "user2", "user3"],
+		"server": ["test{1,2,3,4}"],
+		"groupby": "TRUE",
 	}
 }
