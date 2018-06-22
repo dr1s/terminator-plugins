@@ -311,7 +311,7 @@ class ClusterConnect(plugin.Plugin):
                 # Check if a command was generated an pass it to the terminal
             if command[len(command) - 1] != '\n':
                 command += '\n'
-                terminal.vte.feed_child(command,-1)
+                terminal.vte.feed_child(str(command))
 
     def expand_servers(self, servers):
         expanded_servers = list()
