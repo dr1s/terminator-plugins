@@ -114,6 +114,12 @@ class ClusterConnect(plugin.Plugin):
                 # Add menu for split and new tab
                 self.add_split_submenu(terminal, cluster, user,
                                        servers[0], cluster_sub_users)
+            # Add sudousers
+            if 'sudousers' in locals() and sudousers:
+               for sudouser in sudousers:
+                       self.add_split_submenu(terminal, cluster,
+                                              sudouser, servers[0], cluster_sub_users, True)
+
 
     def create_cluster_sub_servers(self, server, users, terminal, cluster, cluster_sub_users, sudousers):
         for user in users:
