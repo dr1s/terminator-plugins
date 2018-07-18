@@ -14,17 +14,22 @@ Autocomplete and such should be used very carefully.
 
 Installation
 ============
+The master branch currently features the GTK3 version of this plugin. The GTK2 version can be found in the branch 'gtk2'.
+
 1. Put files in `~/.config/terminator/plugins/`:
 
+        git clone https://github.com/dr1s/terminator-plugins.git
         mkdir -p ~/.config/terminator/plugins
-        cp cluster_connect.py ~/.config/terminator/plugins/
-        cp cluster_connect_config.py ~/.config/terminator/plugins/
-	Add config to ~/.confif/terminator/plugins/cluster_connect_config in json-format
+        cp terminator-plugins/cluster_connect/cluster_connect.py ~/.config/terminator/plugins/
+        cp -r terminator-plugins/cluster_connect/cluster_connect_config ~/.config/terminator/plugins/
+	Add config to ~/.config/terminator/plugins/cluster_connect_config in json-format
 
 2. Edit `~/.config/terminator/plugins/cluster_connect_config.py`, for example:
 
+  See: cluster_connect_config/config.json
+
 	Options:
-	
+
 		- user: Array of Usernames
 		- server: Array of servers ip or hostnames. The plugin just passes it to ssh
 		- groupby: True or False, If you specify as true the terminals will be grouped.

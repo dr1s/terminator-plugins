@@ -18,12 +18,13 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-from gi.repository import GObject
 import random
 import terminatorlib.plugin as plugin
 import getpass
 import json
 import os
+import re
+import itertools
 
 pluginpath = os.path.dirname(os.path.realpath(__file__))
 configpath = (pluginpath + "/cluster_connect_config")
@@ -83,6 +84,7 @@ class ClusterConnect(plugin.Plugin):
             sudousers.sort()
             # Get servers and insert cluster for cluster connect
         servers = self.get_property(cluster, 'server')
+        servers = self.expand_servers(servers)
         servers.sort()
         if len(servers) > 1:
             if 'cluster' not in servers:
@@ -180,6 +182,7 @@ class ClusterConnect(plugin.Plugin):
 
                     # Create a group, if the terminals should be grouped
             servers = self.get_property(cluster, 'server')
+            servers = self.expand_servers(servers)
             servers.sort()
 
             # Remove cluster from server, there shouldn't be a server named cluster
@@ -311,4 +314,13 @@ class ClusterConnect(plugin.Plugin):
                 # Check if a command was generated an pass it to the terminal
             if command[len(command) - 1] != '\n':
                 command += '\n'
-                terminal.vte.feed_child(command,len(command))
+                terminal.vte.feed_child(str(command))
+
+    def expand_servers(self, servers):
+        expanded_servers = list()
+        for server in servers:
+            for x in itertools.product(*[ part.split(',') if i%2 else [part]  for i,part in
+                                          enumerate(re.split(r'\{(.*?)\}',server)) ]):
+                one_server = ''.join(x)
+                expanded_servers.append(one_server)
+        return expanded_servers
