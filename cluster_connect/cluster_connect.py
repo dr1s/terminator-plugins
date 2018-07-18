@@ -33,13 +33,16 @@ for root, dirs, files in os.walk(configpath):
     for file in files:
         if file.endswith(".json"):
             filename = (os.path.join(root, file))
-            with open(filename) as data_file:
-                try:
-                    CLUSTERS
-                except NameError:
-                    CLUSTERS = json.load(data_file)
-                else:
-                    CLUSTERS.update(json.load(data_file))
+            try:
+                with open(filename) as data_file:
+                    try:
+                        CLUSTERS
+                    except NameError:
+                        CLUSTERS = json.load(data_file)
+                    else:
+                        CLUSTERS.update(json.load(data_file))
+            except Exception as e:
+                print "Error loading "+filename+": "+str(e);
 
 AVAILABLE = ['ClusterConnect']
 current_user = getpass.getuser()
@@ -111,6 +114,12 @@ class ClusterConnect(plugin.Plugin):
                 # Add menu for split and new tab
                 self.add_split_submenu(terminal, cluster, user,
                                        servers[0], cluster_sub_users)
+            # Add sudousers
+            if 'sudousers' in locals() and sudousers:
+               for sudouser in sudousers:
+                       self.add_split_submenu(terminal, cluster,
+                                              sudouser, servers[0], cluster_sub_users, True)
+
 
     def create_cluster_sub_servers(self, server, users, terminal, cluster, cluster_sub_users, sudousers):
         for user in users:
@@ -311,7 +320,7 @@ class ClusterConnect(plugin.Plugin):
                 # Check if a command was generated an pass it to the terminal
             if command[len(command) - 1] != '\n':
                 command += '\n'
-                terminal.vte.feed_child(str(command))
+                self.feed_child(terminal,command)
 
     def expand_servers(self, servers):
         expanded_servers = list()
@@ -321,3 +330,9 @@ class ClusterConnect(plugin.Plugin):
                 one_server = ''.join(x)
                 expanded_servers.append(one_server)
         return expanded_servers
+
+    def feed_child(self, terminal, command):
+        try:
+            terminal.vte.feed_child(str(command))
+        except TypeError:
+            terminal.vte.feed_child(command,len(command))
