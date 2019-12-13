@@ -25,6 +25,8 @@ import json
 import os
 import re
 import itertools
+import logging, sys
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 pluginpath = os.path.dirname(os.path.realpath(__file__))
 configpath = (pluginpath + "/cluster_connect_config")
@@ -42,7 +44,7 @@ for root, dirs, files in os.walk(configpath):
                     else:
                         CLUSTERS.update(json.load(data_file))
             except Exception as e:
-                print "Error loading "+filename+": "+str(e);
+                print ("Error loading "+filename+": "+str(e))
 
 AVAILABLE = ['ClusterConnect']
 current_user = getpass.getuser()
@@ -52,11 +54,12 @@ class ClusterConnect(plugin.Plugin):
     capabilities = ['terminal_menu']
 
     def callback(self, menuitems, menu, terminal):
+
         submenu = self.add_submenu(menuitems, 'ClusterConnect')
-        clusters = CLUSTERS.keys()
-        clusters.sort()
+        clusters = sorted(CLUSTERS)
+
         groups = self.get_groups()
-        groups.sort()
+        groups = sorted(groups)
         if len(groups) > 0:
             for group in groups:
                 sub_groups = self.add_submenu(submenu, group)
@@ -71,21 +74,22 @@ class ClusterConnect(plugin.Plugin):
         # Get users and add current to connect with current user
         users = self.get_property(cluster, 'user')
         current_user_prop = self.get_property(cluster, 'current_user', True)
+        # current_user_prop = current_user_prop == 'False'
         sudousers = self.get_property(cluster, 'sudouser')
 
         if users:
-            users.sort()
+            users = sorted(users)
             if current_user_prop and current_user not in users:
                 users.insert(0, current_user)
         elif current_user_prop:
             users = [current_user]
             # Get sudousers for current user
         if sudousers:
-            sudousers.sort()
+            sudousers = sorted(sudousers)
             # Get servers and insert cluster for cluster connect
         servers = self.get_property(cluster, 'server')
         servers = self.expand_servers(servers)
-        servers.sort()
+        servers = sorted(servers)
         if len(servers) > 1:
             if 'cluster' not in servers:
                 servers.insert(0, 'cluster')
@@ -174,7 +178,7 @@ class ClusterConnect(plugin.Plugin):
 
     def connect_cluster(self, widget, terminal, cluster, user, server_connect, sudo=False):
 
-        if CLUSTERS.has_key(cluster):
+        if cluster in CLUSTERS:
             # get the first tab and add a new one so you don't need to care
             # about which window is focused
             focussed_terminal = None
@@ -189,7 +193,7 @@ class ClusterConnect(plugin.Plugin):
                     # Create a group, if the terminals should be grouped
             servers = self.get_property(cluster, 'server')
             servers = self.expand_servers(servers)
-            servers.sort()
+            servers = sorted(servers)
 
             # Remove cluster from server, there shouldn't be a server named cluster
             if 'cluster' in servers:
@@ -237,8 +241,9 @@ class ClusterConnect(plugin.Plugin):
 
         if server_count > 1:
             visible_terminals_temp = window.get_visible_terminals()
-            server1 = servers[:server_count / 2]
-            server2 = servers[server_count / 2:]
+            logging.debug(server_count)
+            server1 = servers[:int(server_count / 2)]
+            server2 = servers[int(server_count / 2):]
 
         horiz_splits = self.get_property(cluster, 'horiz_splits', 5)
 
@@ -262,14 +267,13 @@ class ClusterConnect(plugin.Plugin):
 
     def get_property(self, cluster, prop, default=False):
         # Check if property and Cluster exsist and return if true else return false
-        if CLUSTERS.has_key(cluster) and CLUSTERS[cluster].has_key(prop):
+        if cluster in CLUSTERS and prop in CLUSTERS[cluster]:
             return CLUSTERS[cluster][prop]
         else:
             return default
 
     def get_groups(self):
-        clusters = CLUSTERS.keys()
-        clusters.sort()
+        clusters = sorted(CLUSTERS)
         groups = []
         for cluster in clusters:
             group = self.get_property(cluster, 'group', 'none')
@@ -333,6 +337,6 @@ class ClusterConnect(plugin.Plugin):
 
     def feed_child(self, terminal, command):
         try:
-            terminal.vte.feed_child(str(command))
+            terminal.vte.feed_child(str(command).encode("utf-8"))
         except TypeError:
             terminal.vte.feed_child(command,len(command))
