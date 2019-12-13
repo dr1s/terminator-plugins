@@ -6,7 +6,7 @@ It adds a new tab to Terminator and splits the window as needed.
 
 
 
-If you specify groupby as True the plugin adds the new terminals to a group.
+If you specify groupby as true the plugin adds the new terminals to a group.
 You will be able to send the same commands to all servers.
 Be carful in using this feature, as you are probably typing to a lot of servers simultaneously!
 Autocomplete and such should be used very carefully.
@@ -32,14 +32,14 @@ The master branch currently features the GTK3 version of this plugin. The GTK2 v
 
 		- user: Array of Usernames
 		- server: Array of servers ip or hostnames. The plugin just passes it to ssh
-		- groupby: True or False, If you specify as true the terminals will be grouped.
+		- groupby: true or false, If you specify as true the terminals will be grouped.
 			Your sending the commands to the whole group from the start.
-		- agent: True or False, if true then ssh agent is enabled and -A Option is added to command
+		- agent: true or false, if true then ssh agent is enabled and -A Option is added to command
 		- port: set ssh port to something else than default
 		- identity: specify path to a ssh-key-file
 		- verbose: 1, 2 or 3 for -v, -vv or -vvv
-		- current_user: True or False, if set to False user current, won't be displayed in submenu
-			default: True
+		- current_user: true or false, if set to false user current, won't be displayed in submenu
+			default: true
 		- horiz_splits: Number of hoirzontal splits before doing a vertical split, default: 5
 		- sudouser: Array of Usernames which will be called after the login with you user with `sudo -su`
 		- group: Group name for submenu
