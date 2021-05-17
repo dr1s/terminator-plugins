@@ -311,7 +311,7 @@ class ClusterConnect(plugin.Plugin):
             verbose = self.get_property(cluster, 'verbose')
             if verbose:
                 count = 0
-                command = "-"
+                command += " -"
                 while count < verbose < 3:
                     command += "v"
                     count += 1
