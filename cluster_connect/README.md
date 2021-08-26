@@ -24,7 +24,7 @@ The master branch currently features the GTK3 version of this plugin. The GTK2 v
         cp -r terminator-plugins/cluster_connect/cluster_connect_config ~/.config/terminator/plugins/
 	Add config to ~/.config/terminator/plugins/cluster_connect_config in json-format
 
-2. Edit `~/.config/terminator/plugins/cluster_connect_config.py`, for example:
+2. Edit `~/.config/terminator/plugins/cluster_connect_config/config.json`, for example:
 
   See: cluster_connect_config/config.json
 
