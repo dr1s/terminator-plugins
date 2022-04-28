@@ -319,7 +319,7 @@ class ClusterConnect(plugin.Plugin):
             command = command + " " + hostname
 
             if sudo:
-                command = command + " -t sudo -su " + user
+                command = command + " -t sudo -iu " + user
 
                 # Check if a command was generated an pass it to the terminal
             if command[len(command) - 1] != '\n':
